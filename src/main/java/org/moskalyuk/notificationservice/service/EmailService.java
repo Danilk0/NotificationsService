@@ -3,6 +3,7 @@ package org.moskalyuk.notificationservice.service;
 import lombok.RequiredArgsConstructor;
 import org.moskalyuk.notificationservice.dto.NotificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +18,19 @@ import java.util.List;
 @Service
 public class EmailService{
 
+    @Value("${admin.emails.url}")
+    private String adminEmailsUrl;
+
+    @Value("${spring.mail.username}")
+    private String senderEmail;
+
     private final JavaMailSender emailSender;
     private final RestTemplate restTemplate;
 
+
     public void sendEmail(NotificationRequest notificationRequest) {
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-        simpleMailMessage.setFrom("hello@demomailtrap.co");
+        simpleMailMessage.setFrom(senderEmail);
         simpleMailMessage.setTo(getEmails().toArray(new String[0]));
         simpleMailMessage.setSubject(notificationRequest.getSubject());
         simpleMailMessage.setText(notificationRequest.getMessage());
@@ -31,7 +39,7 @@ public class EmailService{
 
     private List<String> getEmails() {
         ResponseEntity<List<String>> response = restTemplate.exchange(
-                "http://localhost:8080/notification",
+                adminEmailsUrl,
                 HttpMethod.GET,
                 null,
                 new ParameterizedTypeReference<>() {}
